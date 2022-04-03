@@ -17,7 +17,9 @@ function adjMines(x, y) {
     let total = 0;
     for (let dy = -1; dy <= 1; dy++) {
         for (let dx = -1; dx <= 1; dx++) {
-            if (!(dx == 0 && dy == 0)) total += isMine(x + dx, y + dy);
+            if (!(dx == 0 && dy == 0)) {
+                total += isMine(x + dx, y + dy);
+            }
         }
     }
     return total;
@@ -53,36 +55,72 @@ cells[(cells.length - 1)/2].classList.add("cursor");
 // 0/undefined = unknown, 1 = cleared, 2 = flagged
 const knownCells = new Map();
 
+function adjFlags(x, y) {
+    let total = 0;
+    for (let dy = -1; dy <= 1; dy++) {
+        for (let dx = -1; dx <= 1; dx++) {
+            if (!(dx == 0 && dy == 0)) {
+                const key = (x + dx) + "," + (y + dy);
+                total += (knownCells.get(key) == 2);
+            }
+        }
+    }
+    return total;
+}
+
 let isDead = false;
 
 function uncover() {
     if (isDead) return;
     const MAX_DIST = 7;
-    function go(x, y) {
+    function go(x, y, initial = false) {
         const key = x + "," + y;
-        if (knownCells.get(key)) return;
-        {
-            const dx = x - curX;
-            const dy = y - curY;
-            if (dx*dx + dy*dy > MAX_DIST*MAX_DIST && Math.random() > 0.3) return;
-        }
-        if (isMine(curX, curY)) {
-            die();
-            return;
-        }
-        knownCells.set(key, 1);
-        if (adjMines(x, y) == 0) {
-            go(x - 1, y - 1);
-            go(x, y - 1);
-            go(x + 1, y - 1);
-            go(x - 1, y);
-            go(x + 1, y);
-            go(x - 1, y + 1);
-            go(x, y + 1);
-            go(x + 1, y + 1);
+        switch (knownCells.get(key)) {
+            case 0:
+            case undefined:
+                {
+                    const dx = x - curX;
+                    const dy = y - curY;
+                    if (dx*dx + dy*dy > MAX_DIST*MAX_DIST && Math.random() > 0.3) return;
+                }
+                if (isMine(curX, curY)) {
+                    die();
+                    return;
+                } else {
+                    knownCells.set(key, 1);
+                    if (adjMines(x, y) == 0) {
+                        go(x - 1, y - 1);
+                        go(x, y - 1);
+                        go(x + 1, y - 1);
+                        go(x - 1, y);
+                        go(x + 1, y);
+                        go(x - 1, y + 1);
+                        go(x, y + 1);
+                        go(x + 1, y + 1);
+                    }
+                }
+                break;
+            case 1:
+                if (initial) {
+                    const flags = adjFlags(x, y);
+                    if (flags > 0 && flags == adjMines(x, y)) {
+                        go(x - 1, y - 1);
+                        go(x, y - 1);
+                        go(x + 1, y - 1);
+                        go(x - 1, y);
+                        go(x + 1, y);
+                        go(x - 1, y + 1);
+                        go(x, y + 1);
+                        go(x + 1, y + 1);
+                    }
+                }
+                break;
+            case 2:
+                // don't try to uncover flagged cells
+                break;
         }
     }
-    go(curX, curY);
+    go(curX, curY, initial = true);
 }
 
 uncover();
