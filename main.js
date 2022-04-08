@@ -83,7 +83,7 @@ function uncover() {
                     const dy = y - curY;
                     if (dx*dx + dy*dy > MAX_DIST*MAX_DIST && Math.random() > 0.3) return;
                 }
-                if (isMine(curX, curY)) {
+                if (isMine(x, y)) {
                     die();
                     return;
                 } else {
