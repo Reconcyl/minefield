@@ -69,6 +69,9 @@ function adjFlags(x, y) {
 }
 
 let isDead = false;
+let nUncovered = 0;
+const notification = 500;
+let startTime = undefined;
 
 function uncover() {
     if (isDead) return;
@@ -87,6 +90,12 @@ function uncover() {
                     die();
                     return;
                 } else {
+                    if (startTime == undefined)
+                        startTime = new Date();
+                    nUncovered++;
+                    if (nUncovered == notification)
+                        // 170.456
+                        alert(`Uncovered ${notification} in ${(new Date() - startTime)/1000}s`);
                     knownCells.set(key, 1);
                     if (adjMines(x, y) == 0) {
                         go(x - 1, y - 1);
@@ -124,6 +133,7 @@ function uncover() {
 }
 
 uncover();
+startTime = undefined; // ignore timings from this
 
 function redraw() {
     let i = 0;
