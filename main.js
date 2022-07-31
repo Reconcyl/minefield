@@ -94,7 +94,7 @@ function uncover() {
                         startTime = new Date();
                     nUncovered++;
                     if (nUncovered == notification)
-                        // 130.155
+                        // 121.246
                         alert(`Uncovered ${notification} in ${(new Date() - startTime)/1000}s`);
                     knownCells.set(key, 1);
                     if (adjMines(x, y) == 0) {
